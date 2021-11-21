@@ -28,6 +28,9 @@ app.use('/api/posts', postRoute);
 app.use('/api/level', levelRoute);
 app.use('/api/leaderboard', leaderboardRoute);
 
-app.listen(3000, () => {
-  console.log('Server up and running');
+app.listen(process.env.PORT || 3000, function(){
+  console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
 });
+// app.listen(3000, () => {
+//   console.log('Server up and running');
+// });
