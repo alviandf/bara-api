@@ -18,7 +18,15 @@ const userSchema = new moongoose.Schema({
     date: {
         type: Date,
         default: Date.now
-    }
+    },
+    exp : {
+        type: Number,
+        default: 0
+    },
+    points : {
+        type: Number,
+        default: 0
+    },
 });
 
 module.exports = moongoose.model('User', userSchema);
