@@ -4,8 +4,6 @@ const User = require('../model/User');
 const CompletedLevel = require('../model/CompletedLevel');
 const verify = require('./verifyToken');
 
-//
-
 router.post('/complete', verify, async (req, res) => {
     // res.json({
     //     posts: {
