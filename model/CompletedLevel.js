@@ -25,6 +25,10 @@ const completedLevelSchema = new mongoose.Schema({
     level: {
         type: Number,
         required: true,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
     }
 });
 
