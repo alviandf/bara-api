@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const completedLevelSchema = new mongoose.Schema({
+const savedLevelSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.ObjectId,
         ref: 'User',
@@ -29,7 +29,11 @@ const completedLevelSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    isCompleted: {
+        type: Boolean,
+        default: false
     }
 });
 
-module.exports = mongoose.model('CompletedLevel', completedLevelSchema);
+module.exports = mongoose.model('SavedLevel', savedLevelSchema);

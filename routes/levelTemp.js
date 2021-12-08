@@ -12,9 +12,10 @@ API /complete
 
 */
 
-router.post('/save', verify, async (req, res, next) => {
+router.post('/complete', verify, async (req, res, next) => {
 
     try {
+
         // Check Is Completed
         const isCompleted = await SavedLevel.findOne({
             userId: req.user._id,
@@ -23,18 +24,24 @@ router.post('/save', verify, async (req, res, next) => {
             level: req.body.level
         });
         if (isCompleted) {
-
             // Update Level
-            const savedLevelUpdated = await SavedLevel.findByIdAndUpdate(isCompleted._id, req.body, {
-                new: true
-            });
+            // const filter = { : 'Jean-Luc Picard' };
+            const update = {
+                isCompleted: req.body.isCompleted
+            };
 
-            return res.json({
+            const savedLevelUpdated = await SavedLevel.findByIdAndUpdate(isCompleted._id, req.body);
+
+            console.log(savedLevelUpdated);
+
+            res.json({
                 success: true,
                 code: '201',
                 message: 'Level Updated',
                 data: savedLevelUpdated,
             });
+            next();
+            console.log('Level Updated');
         }
 
 
@@ -48,6 +55,9 @@ router.post('/save', verify, async (req, res, next) => {
         });
 
         // Save Completed Level
+
+        console.log("Save Level");
+
         const savedCompletedLevel = await savedLevel.save();
         if (savedCompletedLevel) {
             const user = await User.findOne({
