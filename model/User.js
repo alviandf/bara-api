@@ -19,13 +19,19 @@ const userSchema = new moongoose.Schema({
         type: Date,
         default: Date.now
     },
-    exp : {
+    exp: {
         type: Number,
         default: 0
     },
-    points : {
+    points: {
         type: Number,
         default: 0
+    },
+    avatar: {
+        type: String,
+    },
+    cloudinary_id: {
+        type: String,
     },
 });
 

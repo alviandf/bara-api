@@ -1,6 +1,7 @@
 const express = require('express');
-const app = express(); 
+const app = express();
 const dotenv = require('dotenv');
+dotenv.config();
 const mongoose = require('mongoose');
 
 const globalErrHandler = require('./util/errorController');
@@ -12,13 +13,13 @@ const postRoute = require('./routes/posts');
 const levelRoute = require('./routes/level');
 const leaderboardRoute = require('./routes/leaderboard');
 
-dotenv.config();
-
 // Connect to MongoDB
 mongoose.connect(
-    process.env.DB_CONNECT,
-    { useNewUrlParser: true, useUnifiedTopology: true },
-    () => console.log('Connected to MongoDB')
+  process.env.DB_CONNECT, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  },
+  () => console.log('Connected to MongoDB')
 );
 
 // Middleware
@@ -32,6 +33,6 @@ app.use('/api/leaderboard', leaderboardRoute);
 
 app.use(globalErrHandler);
 
-app.listen(process.env.PORT || 3000, function(){
+app.listen(process.env.PORT || 3000, function () {
   console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
 });
