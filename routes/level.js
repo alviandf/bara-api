@@ -78,11 +78,15 @@ API /episode
 router.get('/episode', verify, async (req, res, next) => {
 
     try {
+
+        console.log(req.user);
+        console.log(req.query);
+
         // Get Completed Levels
         const savedLevels = await SavedLevel.find({
             userId: req.user._id,
-            category: req.body.category,
-            chapter: req.body.chapter
+            category: req.query.category,
+            chapter: req.query.chapter
         });
         res.json({
             success: true,
