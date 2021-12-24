@@ -2,7 +2,10 @@ const router = require('express').Router();
 
 const User = require('../model/User');
 const SavedLevel = require('../model/SavedLevel');
+const Level = require('../model/Level');
 const verify = require('./verifyToken');
+const cloudinary = require("../util/cloudinary");
+const upload = require("../util/multer");
 
 /*
 
@@ -19,7 +22,7 @@ router.post('/save', verify, async (req, res, next) => {
         const isCompleted = await SavedLevel.findOne({
             userId: req.user._id,
             category: req.body.category,
-            chapter: req.body.chapter,
+            episode: req.body.chapter,
             level: req.body.level
         });
         if (isCompleted) {
@@ -42,7 +45,7 @@ router.post('/save', verify, async (req, res, next) => {
         const savedLevel = new SavedLevel({
             userId: req.user._id,
             category: req.body.category,
-            chapter: req.body.chapter,
+            episode: req.body.chapter,
             level: req.body.level,
             isCompleted: req.body.isCompleted
         });
@@ -57,6 +60,7 @@ router.post('/save', verify, async (req, res, next) => {
             user.points += 100; // Add points
             await user.save();
         }
+
         res.json({
             success: true,
             code: '200',
@@ -86,7 +90,7 @@ router.get('/episode', verify, async (req, res, next) => {
         const savedLevels = await SavedLevel.find({
             userId: req.user._id,
             category: req.query.category,
-            chapter: req.query.chapter
+            episode: req.query.chapter
         });
         res.json({
             success: true,
@@ -94,6 +98,168 @@ router.get('/episode', verify, async (req, res, next) => {
             message: 'OK',
             data: savedLevels,
         });
+    } catch (err) {
+        next(err);
+    }
+
+});
+
+
+router.get('/sound', async (req, res, next) => {
+
+    try {
+
+        // Get Sound From Cloudinary
+        const input = await cloudinary.search
+            .expression(`filename:(${req.query.name}*) AND folder=sound`)
+            .max_results(10)
+            .execute()
+
+        res.json({
+            success: true,
+            code: '200',
+            message: 'OK',
+            data: sound.resources[0].secure_url
+        });
+
+    } catch (err) {
+        next(err);
+    }
+
+});
+
+router.post('/input', async (req, res, next) => {
+
+    try {
+
+        const input = req.body
+        input.forEach(async (level) => {
+
+            const isExist = await Level.findOne({
+                category: req.body.category,
+                episode: req.body.episode,
+                level: req.body.level,
+            });
+
+            let inputedLevel;
+            if (isExist) {
+                inputedLevel = await Level.findByIdAndUpdate(isExist._id, req.body, {
+                    new: true
+                });
+            } else {
+                newLevel = new Level(level);
+                inputedLevel = await newLevel.save();
+            }
+
+        });
+
+        res.json({
+            success: true,
+            code: '200',
+            message: 'OK',
+            data: "OK",
+        });
+
+    } catch (err) {
+        next(err);
+    }
+
+});
+
+router.get('/list', verify, async (req, res, next) => {
+
+    try {
+
+        // Get List Level
+        const levels = await Level.find({
+            category: req.query.category,
+            episode: req.query.episode,
+        }).sort({
+            level: 1
+        });
+
+        const savedLevels = await SavedLevel.find({
+            userId: req.user._id,
+            category: req.query.category,
+            episode: req.query.episode
+        });
+
+        // Check if level saved
+        let arr = [];
+        for (let level of levels) {
+            for (let savedLevel of savedLevels) {
+                let isCompleted;
+
+                if (level.category === savedLevel.category && level.episode === savedLevel.episode && level.level === savedLevel.level) {
+                    isCompleted = savedLevel.isCompleted
+                } else {
+                    isCompleted = null
+                }
+
+                const data = JSON.parse(JSON.stringify(level));
+                const obj = {
+                    ...data,
+                    isCompleted: isCompleted
+                };
+
+                arr.push(obj)
+            }
+        }
+
+        res.json({
+            success: true,
+            code: '200',
+            message: 'OK',
+            data: arr,
+        });
+
+    } catch (err) {
+        next(err);
+    }
+
+});
+
+router.get('/detail', verify, async (req, res, next) => {
+
+    try {
+
+        const level = await Level.findOne({
+            category: req.query.category,
+            episode: req.query.episode,
+            level: req.query.level,
+        })
+
+        const savedLevel = await SavedLevel.findOne({
+            userId: req.user._id,
+            category: req.query.category,
+            episode: req.query.episode,
+            level: req.query.level
+        });
+
+        const sound = await cloudinary.search
+            .expression(`filename:(${level.question}*) AND folder=sound`)
+            .max_results(10)
+            .execute()
+
+        let soundUrl = null;
+        if (sound.resources[0] != null) {
+            soundUrl = sound.resources[0].secure_url
+        }
+
+        const data = JSON.parse(JSON.stringify(level));
+        const obj = {
+            ...data,
+            isCompleted: savedLevel.isCompleted,
+            sound: soundUrl
+        };
+
+        res.json({
+            success: true,
+            code: '200',
+            message: 'OK',
+            data: obj,
+        });
+
     } catch (err) {
         next(err);
     }

@@ -1,0 +1,54 @@
+const mongoose = require('mongoose');
+
+const levelSchema = new mongoose.Schema({
+    category: {
+        type: String,
+        required: true,
+        enum: {
+            values: [
+                'reading',
+                'writing',
+                'listening',
+                'speaking'
+            ],
+            message: '{VALUE} is unknown'
+        }
+    },
+    episode: {
+        type: Number,
+        required: true
+    },
+    level: {
+        type: Number,
+        required: true,
+    },
+    question: {
+        type: String,
+        required: true
+    },
+    answer1: {
+        type: String,
+        required: true
+    },
+    answer2: {
+        type: String,
+        required: true
+    },
+    answer3: {
+        type: String,
+        required: true
+    },
+    answer4: {
+        type: String,
+        required: true
+    },
+    correctanswer: {
+        type: String,
+        required: true
+    },
+    sound: {
+        type: String
+    }
+});
+
+module.exports = mongoose.model('Level', levelSchema);

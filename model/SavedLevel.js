@@ -18,7 +18,7 @@ const savedLevelSchema = new mongoose.Schema({
             message: '{VALUE} is unknown'
         }
     },
-    chapter: {
+    episode: {
         type: Number,
         required: true
     },
