@@ -22,7 +22,7 @@ router.post('/save', verify, async (req, res, next) => {
         const isCompleted = await SavedLevel.findOne({
             userId: req.user._id,
             category: req.body.category,
-            episode: req.body.chapter,
+            episode: req.body.episode,
             level: req.body.level
         });
         if (isCompleted) {
@@ -45,7 +45,7 @@ router.post('/save', verify, async (req, res, next) => {
         const savedLevel = new SavedLevel({
             userId: req.user._id,
             category: req.body.category,
-            episode: req.body.chapter,
+            episode: req.body.episode,
             level: req.body.level,
             isCompleted: req.body.isCompleted
         });
@@ -90,7 +90,7 @@ router.get('/episode', verify, async (req, res, next) => {
         const savedLevels = await SavedLevel.find({
             userId: req.user._id,
             category: req.query.category,
-            episode: req.query.chapter
+            episode: req.query.episode
         });
         res.json({
             success: true,
