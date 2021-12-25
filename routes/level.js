@@ -246,10 +246,12 @@ router.get('/detail', verify, async (req, res, next) => {
             soundUrl = sound.resources[0].secure_url
         }
 
+        const isCompleted = savedLevel ? savedLevel.isCompleted : null;
+
         const data = JSON.parse(JSON.stringify(level));
         const obj = {
             ...data,
-            isCompleted: savedLevel.isCompleted,
+            isCompleted: isCompleted,
             sound: soundUrl
         };
 
