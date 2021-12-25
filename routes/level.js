@@ -178,32 +178,36 @@ router.get('/list', verify, async (req, res, next) => {
             level: 1
         });
 
+        console.log(levels);
+
         const savedLevels = await SavedLevel.find({
             userId: req.user._id,
             category: req.query.category,
             episode: req.query.episode
         });
 
+        // console.log(savedLevels);
+
+
         // Check if level saved
         let arr = [];
         for (let level of levels) {
-            for (let savedLevel of savedLevels) {
-                let isCompleted;
 
+            let isCompleted = null;
+
+            for (let savedLevel of savedLevels) {
                 if (level.category === savedLevel.category && level.episode === savedLevel.episode && level.level === savedLevel.level) {
                     isCompleted = savedLevel.isCompleted
-                } else {
-                    isCompleted = null
                 }
-
-                const data = JSON.parse(JSON.stringify(level));
-                const obj = {
-                    ...data,
-                    isCompleted: isCompleted
-                };
-
-                arr.push(obj)
             }
+
+            const data = JSON.parse(JSON.stringify(level));
+            const obj = {
+                ...data,
+                isCompleted: isCompleted
+            };
+
+            arr.push(obj)
         }
 
         res.json({
