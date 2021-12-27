@@ -11,6 +11,7 @@ const AppError = require('./util/appError');
 const authRoute = require('./routes/auth');
 const postRoute = require('./routes/posts');
 const levelRoute = require('./routes/level');
+const episodeRoute = require('./routes/episode');
 const leaderboardRoute = require('./routes/leaderboard');
 
 // Connect to MongoDB
@@ -29,6 +30,7 @@ app.use(express.json());
 app.use('/api/user', authRoute);
 app.use('/api/posts', postRoute);
 app.use('/api/level', levelRoute);
+app.use('/api/episode', episodeRoute);
 app.use('/api/leaderboard', leaderboardRoute);
 
 app.use(globalErrHandler);
