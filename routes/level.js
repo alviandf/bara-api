@@ -269,4 +269,49 @@ router.get('/detail', verify, async (req, res, next) => {
 
 });
 
+router.get('/progress', verify, async (req, res, next) => {
+    try {
+
+        const levels = await Level.find({
+            category: req.query.category,
+            episode: req.query.episode,
+        })
+
+        const savedLevel = await SavedLevel.find({
+            userId: req.user._id,
+            category: req.query.category,
+            episode: req.query.episode
+        });
+
+        let trueCount = 0;
+        let falseCount = 0;
+        let notStartedCount = 0;
+
+        savedLevel.forEach(level => {
+            if (level.isCompleted) {
+                trueCount++
+            } else if (!level.isCompleted) {
+                falseCount++
+            }
+        })
+
+        notStartedCount = levels.length - savedLevel.length;
+
+        res.json({
+            success: true,
+            code: '200',
+            message: 'OK',
+            data: {
+                true: trueCount,
+                false: falseCount,
+                notStarted: notStartedCount
+            },
+        });
+
+    } catch (err) {
+        next(err);
+    }
+
+});
+
 module.exports = router;
