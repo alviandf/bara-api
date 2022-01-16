@@ -6,7 +6,7 @@ router.get('/', verify, async (req, res) => {
 
     // Get Leaderboard
     try {
-        const leaderboard = await User.find({}, 'name points exp').sort({
+        const leaderboard = await User.find({}, 'name points exp avatar').sort({
             points: -1
         }).limit(10);
         res.json({

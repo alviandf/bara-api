@@ -29,6 +29,7 @@ const userSchema = new moongoose.Schema({
     },
     avatar: {
         type: String,
+        default: "https://res.cloudinary.com/dfm7qje8a/image/upload/v1642154801/default-avatar.jpg"
     },
     cloudinary_id: {
         type: String,

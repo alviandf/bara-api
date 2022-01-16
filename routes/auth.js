@@ -47,7 +47,7 @@ router.post('/register', upload.single("image"), async (req, res, next) => {
         // Create a new user
 
         // Upload image to cloudinary
-        let secureUrl = "";
+        let secureUrl = null;
         let publicId = "";
 
         if (req.file != undefined) {
@@ -56,13 +56,31 @@ router.post('/register', upload.single("image"), async (req, res, next) => {
             publicId = result.public_id;
         }
 
-        const user = new User({
-            name: req.body.name,
-            email: req.body.email,
-            password: hashedPassword,
-            avatar: secureUrl,
-            cloudinary_id: publicId,
-        });
+        let user;
+        if (secureUrl != null) {
+            user = new User({
+                name: req.body.name,
+                email: req.body.email,
+                password: hashedPassword,
+                avatar: secureUrl,
+                cloudinary_id: publicId,
+            });
+        } else {
+            user = new User({
+                name: req.body.name,
+                email: req.body.email,
+                password: hashedPassword,
+                cloudinary_id: publicId,
+            });
+        }
+
+        // const user = new User({
+        //     name: req.body.name,
+        //     email: req.body.email,
+        //     password: hashedPassword,
+        //     avatar: secureUrl,
+        //     cloudinary_id: publicId,
+        // });
 
         const savedUser = await user.save();
 
