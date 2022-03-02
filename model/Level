@@ -28,23 +28,23 @@ const levelSchema = new mongoose.Schema({
     },
     answer1: {
         type: String,
-        required: true
+        required: false
     },
     answer2: {
         type: String,
-        required: true
+        required: false
     },
     answer3: {
         type: String,
-        required: true
+        required: false
     },
     answer4: {
         type: String,
-        required: true
+        required: false
     },
     correctanswer: {
         type: Number,
-        required: true
+        required: false
     },
     sound: {
         type: String
