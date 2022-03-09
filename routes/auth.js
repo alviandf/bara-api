@@ -11,6 +11,7 @@ const {
 } = require('../validation');
 const AppError = require('../util/appError');
 
+// Register
 router.post('/register', upload.single("image"), async (req, res, next) => {
     try {
 
@@ -100,7 +101,9 @@ router.post('/register', upload.single("image"), async (req, res, next) => {
 router.post("/", upload.single("image"), async (req, res) => {
     try {
         // Upload image to cloudinary
-        const result = await cloudinary.uploader.upload(req.file.path);
+        const result = await cloudinary.uploader.upload(req.file.path, {
+            folder: "avatar"
+        });
 
         // Create new user
         let user = new User({
@@ -153,6 +156,103 @@ router.post('/login', async (req, res, next) => {
             user: user
         },
     });
+});
+
+
+// Update 
+router.post('/update', upload.single("image"), async (req, res, next) => {
+    try {
+
+        // Lets Validate
+        const {
+            error
+        } = registerValidation(req.body);
+        if (error) return next(new AppError(error.details[0].message, 400));
+
+        // Check if user already exists
+        // const emailExist = await User.findOne({
+        //     email: req.body.email
+        // });
+        // if (emailExist) return next(new AppError('Email already exists', 400));
+
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+
+        // == Update User ==
+
+        // Upload image to cloudinary
+        let secureUrl = null;
+        let publicId = "";
+
+        if (req.file != undefined) {
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: "avatar"
+            });
+            secureUrl = result.secure_url;
+            publicId = result.public_id;
+        }
+
+        let user;
+        if (secureUrl != null) {
+            user = new User({
+                name: req.body.name,
+                email: req.body.email,
+                password: hashedPassword,
+                avatar: secureUrl,
+                cloudinary_id: publicId,
+            });
+        } else {
+            user = new User({
+                name: req.body.name,
+                email: req.body.email,
+                password: hashedPassword,
+                cloudinary_id: publicId,
+            });
+        }
+
+        // const user = new User({
+        //     name: req.body.name,
+        //     email: req.body.email,
+        //     password: hashedPassword,
+        //     avatar: secureUrl,
+        //     cloudinary_id: publicId,
+        // });
+
+        // const savedUser = await user.update();
+
+        const savedUserUpdated = await User.findOneAndUpdate({
+            email: req.body.email
+        }, {
+            $set: {
+                name: req.body.name,
+                password: hashedPassword,
+                avatar: secureUrl,
+                cloudinary_id: publicId,
+            }
+        }, {
+            new: true
+        });
+
+        // const savedUser = await user.updateOne({
+        //     name: req.body.name,
+        //     email: req.body.email,
+        //     password: hashedPassword,
+        //     avatar: secureUrl,
+        //     cloudinary_id: publicId,
+        // });
+
+        // Send Success Response
+        res.json({
+            success: true,
+            code: '200',
+            message: 'Register berhasil, silahkan login',
+            data: savedUserUpdated,
+        });
+
+    } catch (err) {
+        next(err);
+    }
 });
 
 module.exports = router;

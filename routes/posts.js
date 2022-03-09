@@ -30,7 +30,6 @@ router.get('/', async (req, res) => {
         //     User.save(user);
         // })
 
-
         const user = await User.find({
             avatar: ""
         })
