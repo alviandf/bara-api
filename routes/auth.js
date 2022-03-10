@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const cloudinary = require("../util/cloudinary");
 const upload = require("../util/multer");
+const verify = require('./verifyToken');
 
 const {
     registerValidation,
@@ -160,7 +161,7 @@ router.post('/login', async (req, res, next) => {
 
 
 // Update 
-router.post('/update', upload.single("image"), async (req, res, next) => {
+router.post('/update', verify, upload.single("image"), async (req, res, next) => {
     try {
 
         // Lets Validate
@@ -248,6 +249,25 @@ router.post('/update', upload.single("image"), async (req, res, next) => {
             code: '200',
             message: 'Register berhasil, silahkan login',
             data: savedUserUpdated,
+        });
+
+    } catch (err) {
+        next(err);
+    }
+});
+
+// Get Profile
+router.get('/profile', verify, async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user._id);
+        // console.log(user);
+        // res.json(user);
+
+        res.json({
+            success: true,
+            code: '200',
+            message: 'OK',
+            data: user,
         });
 
     } catch (err) {
