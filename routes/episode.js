@@ -9,13 +9,13 @@ router.get('/list', verify, async (req, res, next) => {
     try {
 
         // Get Episode List
-        let episodeCount = 1;
+        let episodeIndex = 1;
         let arr = [];
         while (true) {
 
             const levels = await Level.find({
                 category: req.query.category,
-                episode: episodeCount,
+                episode: episodeIndex,
             })
 
             if (!levels.length) {
@@ -25,18 +25,20 @@ router.get('/list', verify, async (req, res, next) => {
             const savedLevel = await SavedLevel.find({
                 userId: req.user._id,
                 category: req.query.category,
-                episode: episodeCount,
+                episode: episodeIndex,
                 isCompleted: true
             });
 
             const progress = (Math.floor((savedLevel.length / levels.length) * 100) / 100).toFixed(2);
 
             const obj = {
-                episode: episodeCount,
+                episode: episodeIndex,
                 progress: progress,
+                levels: levels.length,
             }
+
             arr.push(obj);
-            episodeCount++;
+            episodeIndex++;
         }
 
         res.json({
