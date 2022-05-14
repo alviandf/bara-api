@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const cloudinary = require("../util/cloudinary");
 const upload = require("../util/multer");
 const verify = require('./verifyToken');
+const nodemailer = require('nodemailer');
 
 const {
     registerValidation,
@@ -16,21 +17,6 @@ const AppError = require('../util/appError');
 router.post('/register', upload.single("image"), async (req, res, next) => {
     try {
 
-        // // Upload image to cloudinary
-        // const result = await cloudinary.uploader.upload(req.file.path);
-
-        // // Create new user
-        // let user = new User({
-        //     name: req.body.name,
-        //     avatar: result.secure_url,
-        //     cloudinary_id: result.public_id,
-        // });
-
-        // // Save user
-        // await user.save();
-        // res.json(user);
-
-        // Lets Validate
         const {
             error
         } = registerValidation(req.body);
@@ -75,14 +61,6 @@ router.post('/register', upload.single("image"), async (req, res, next) => {
                 cloudinary_id: publicId,
             });
         }
-
-        // const user = new User({
-        //     name: req.body.name,
-        //     email: req.body.email,
-        //     password: hashedPassword,
-        //     avatar: secureUrl,
-        //     cloudinary_id: publicId,
-        // });
 
         const savedUser = await user.save();
 
@@ -145,7 +123,6 @@ router.post('/login', async (req, res, next) => {
     const token = jwt.sign({
         _id: user._id
     }, process.env.TOKEN_SECRET);
-    // res.header('auth-token', token).send({user, token});
 
     // Send Success Response
     res.json({
@@ -169,12 +146,6 @@ router.post('/update', verify, upload.single("image"), async (req, res, next) =>
             error
         } = registerValidation(req.body);
         if (error) return next(new AppError(error.details[0].message, 400));
-
-        // Check if user already exists
-        // const emailExist = await User.findOne({
-        //     email: req.body.email
-        // });
-        // if (emailExist) return next(new AppError('Email already exists', 400));
 
         // Hash password
         const salt = await bcrypt.genSalt(10);
@@ -212,16 +183,6 @@ router.post('/update', verify, upload.single("image"), async (req, res, next) =>
             });
         }
 
-        // const user = new User({
-        //     name: req.body.name,
-        //     email: req.body.email,
-        //     password: hashedPassword,
-        //     avatar: secureUrl,
-        //     cloudinary_id: publicId,
-        // });
-
-        // const savedUser = await user.update();
-
         const savedUserUpdated = await User.findOneAndUpdate({
             email: req.body.email
         }, {
@@ -234,14 +195,6 @@ router.post('/update', verify, upload.single("image"), async (req, res, next) =>
         }, {
             new: true
         });
-
-        // const savedUser = await user.updateOne({
-        //     name: req.body.name,
-        //     email: req.body.email,
-        //     password: hashedPassword,
-        //     avatar: secureUrl,
-        //     cloudinary_id: publicId,
-        // });
 
         // Send Success Response
         res.json({
@@ -268,6 +221,127 @@ router.get('/profile', verify, async (req, res, next) => {
             code: '200',
             message: 'OK',
             data: user,
+        });
+
+    } catch (err) {
+        next(err);
+    }
+});
+
+// Forgot Password
+router.post('/forgot-password', async (req, res, next) => {
+    try {
+        const email = req.body.email;
+
+        const user = await User.findOne({
+            email: email
+        });
+
+        if (!user) return next(new AppError('Email is wrong', 400));
+
+        const token = jwt.sign({
+            _id: user._id
+        }, process.env.TOKEN_SECRET, {
+            expiresIn: '1d'
+        });
+
+        const url = `${req.protocol}://${req.get('host')}/api/user/reset-password/${token}`;
+        console.log(url);
+
+        // create reusable transporter object using the default SMTP transport
+        let transporter = nodemailer.createTransport({
+            host: process.env.EMAIL_HOST,
+            port: 587,
+            secure: false, // true for 465, false for other ports
+            auth: {
+                user: process.env.EMAIL_HOST_USER,
+                pass: process.env.EMAIL_HOST_PASSWORD,
+            },
+            tls: {
+                ciphers: 'SSLv3'
+            }
+        });
+
+        // send mail with defined transport object
+        let info = await transporter.sendMail({
+            from: '"Bara Learn Arabic 📚" <bara.learn@outlook.com>', // sender address
+            to: user.email, // list of receivers
+            subject: "Bara || Reset Password", // Subject line
+            text: "Reset Password", // plain text body
+            html: `<a href="${url}">Click here to reset your password</a>`, // html body
+        });
+
+        console.log("Message sent: %s", info.messageId);
+
+        res.json({
+            success: true,
+            code: '200',
+            message: 'OK',
+            data: {
+                message: 'Email has been sent'
+            },
+        });
+
+    } catch (err) {
+        next(err);
+    }
+})
+
+router.get('/reset-password/:token', (req, res) => {
+    try {
+        const user = User.findOne({
+            _id: req.params.id
+        });
+        const token = req.params.token;
+
+        if (!user) return next(new AppError('User not found', 404));
+        if (!token) return next(new AppError('Token is not provided', 400));
+
+        const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
+        if (!decoded) return next(new AppError('Token is not valid', 400));
+
+        res.render('reset-password', {
+            email: user.email
+        });
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.post('/reset-password/:token', async (req, res, next) => {
+    try {
+        const {
+            password,
+            password2
+        } = req.body;
+
+        if (password.length < 6) return next(new AppError('Password is too short', 400));
+        if (password !== password2) return next(new AppError('Password is not match', 400));
+
+        const {
+            token
+        } = req.params;
+
+        const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
+        if (!decoded) return next(new AppError('Token is not valid', 400));
+
+        const user = await User.findById(decoded._id);
+        if (!user) return next(new AppError('User not found', 404));
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        user.password = hashedPassword;
+
+        await user.save();
+
+        res.json({
+            success: true,
+            code: '200',
+            message: 'OK',
+            data: {
+                message: 'Password has been updated, Now you can login with the new password'
+            },
         });
 
     } catch (err) {

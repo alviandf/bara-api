@@ -4,11 +4,14 @@ const dotenv = require('dotenv');
 dotenv.config();
 const mongoose = require('mongoose');
 
+app.set('view engine', 'ejs');
+
 const globalErrHandler = require('./util/errorController');
 const AppError = require('./util/appError');
 
 // Import route
 const authRoute = require('./routes/auth');
+const pagesAuthRoute = require('./routes/pagesAuth');
 const postRoute = require('./routes/posts');
 const levelRoute = require('./routes/level');
 const episodeRoute = require('./routes/episode');
@@ -25,9 +28,13 @@ mongoose.connect(
 
 // Middleware
 app.use(express.json());
+app.use(express.urlencoded({
+  extended: false
+}));
 
 // Route Middleware
 app.use('/api/user', authRoute);
+app.use('/user', pagesAuthRoute);
 app.use('/api/posts', postRoute);
 app.use('/api/level', levelRoute);
 app.use('/api/episode', episodeRoute);
