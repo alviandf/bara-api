@@ -5,6 +5,7 @@ dotenv.config();
 const mongoose = require('mongoose');
 
 app.set('view engine', 'ejs');
+app.use(express.static("views"));
 
 const globalErrHandler = require('./util/errorController');
 const AppError = require('./util/appError');

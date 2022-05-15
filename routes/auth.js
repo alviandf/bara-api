@@ -287,7 +287,7 @@ router.post('/forgot-password', async (req, res, next) => {
     }
 })
 
-router.get('/reset-password/:token', (req, res) => {
+router.get('/reset-password/:token', (req, res, next) => {
     try {
         const user = User.findOne({
             _id: req.params.id
